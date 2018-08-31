@@ -37,6 +37,8 @@ class Role(db.Model):
     @staticmethod
     def init_role():
         roles_permissions_map = {
+            # 'Guest': [],
+            # 'Blocked': [],
             'Locked': ['FOLLOW', 'COLLECT'],
             'User': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'],
             'Moderator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE'],
@@ -250,6 +252,7 @@ class Tag(db.Model):
 
 
 class Comment(db.Model):
+    """评论"""
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
@@ -266,11 +269,16 @@ class Comment(db.Model):
 
 
 class Notification(db.Model):
+    """消息通知"""
     id = db.Column(db.Integer, primary_key=True)
+    # 消息正文
     message = db.Column(db.Text, nullable=False)
+    # 消息状态
     is_read = db.Column(db.Boolean, default=False)
+    # 时间戳
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-
+    
+    # Notification模型与User模型是一对多关系
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     receiver = db.relationship('User', back_populates='notifications')
