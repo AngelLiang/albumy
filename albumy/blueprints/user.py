@@ -146,6 +146,7 @@ def upload_avatar():
 @login_required
 @confirm_required
 def crop_avatar():
+    """裁剪头像图片"""
     form = CropAvatarForm()
     if form.validate_on_submit():
         x = form.x.data

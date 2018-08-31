@@ -278,9 +278,9 @@ class Notification(db.Model):
     # 时间戳
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     
+    # 接收者
     # Notification模型与User模型是一对多关系
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
     receiver = db.relationship('User', back_populates='notifications')
 
 
