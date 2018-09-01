@@ -27,9 +27,11 @@ def create_app(config_name=None):
         config_name = os.getenv('FLASK_CONFIG', 'development')
 
     app = Flask('albumy')
-    
+
+    # 从settings获取配置信息，加载到app.config里
     app.config.from_object(config[config_name])
 
+    # 注册各种模块
     register_extensions(app)
     register_blueprints(app)
     register_commands(app)

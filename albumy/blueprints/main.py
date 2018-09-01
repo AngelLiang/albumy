@@ -139,11 +139,14 @@ def upload():
 @main_bp.route('/photo/<int:photo_id>')
 def show_photo(photo_id):
     """图片详情页"""
+
+    # SELECT * FROM photo WHERE photo.id = ?
     photo = Photo.query.get_or_404(photo_id)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['ALBUMY_COMMENT_PER_PAGE']
 
     # 获取图片的评论并进行分页
+    # SELECT * FROM comment WHERE ? = comment.photo_id ORDER BY comment.timestamp ASC LIMIT ? OFFSET ?
     pagination = Comment.query.with_parent(photo).order_by(Comment.timestamp.asc()).paginate(page, per_page)
     comments = pagination.items
 
