@@ -92,8 +92,11 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
     name = db.Column(db.String(30))
     website = db.Column(db.String(255))
+    # 简介
     bio = db.Column(db.String(120))
+    # 城市信息
     location = db.Column(db.String(50))
+    # 用户加入时间
     member_since = db.Column(db.DateTime, default=datetime.utcnow)
     avatar_s = db.Column(db.String(64))
     avatar_m = db.Column(db.String(64))

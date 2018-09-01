@@ -138,9 +138,12 @@ def upload():
 
 @main_bp.route('/photo/<int:photo_id>')
 def show_photo(photo_id):
+    """图片详情页"""
     photo = Photo.query.get_or_404(photo_id)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['ALBUMY_COMMENT_PER_PAGE']
+
+    # 获取图片的评论并进行分页
     pagination = Comment.query.with_parent(photo).order_by(Comment.timestamp.asc()).paginate(page, per_page)
     comments = pagination.items
 
@@ -156,9 +159,16 @@ def show_photo(photo_id):
 
 @main_bp.route('/photo/n/<int:photo_id>')
 def photo_next(photo_id):
+    """图片下一张跳转"""
     photo = Photo.query.get_or_404(photo_id)
+    # 通过顺序排列的id字段来找到临近的记录
+    # - `with_parent(photo.author)`： 筛选出与图片作者对应的用户的所有图片。
+    # - `filter(Photo.id<id)`：       筛选出id小于当前图片的所有图片。
+    # - `order_by(Photo.id.desc())`： 根据id字段降序排列。
+    # - `first()`：                   获取的第一个图片就是下一张图片。
     photo_n = Photo.query.with_parent(photo.author).filter(Photo.id < photo_id).order_by(Photo.id.desc()).first()
 
+    # 如果没有下一张图片，则flash一条消息，并重定向到当前图片
     if photo_n is None:
         flash('This is already the last one.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
@@ -167,6 +177,7 @@ def photo_next(photo_id):
 
 @main_bp.route('/photo/p/<int:photo_id>')
 def photo_previous(photo_id):
+    """图片上一张跳转"""
     photo = Photo.query.get_or_404(photo_id)
     photo_p = Photo.query.with_parent(photo.author).filter(Photo.id > photo_id).order_by(Photo.id.asc()).first()
 
