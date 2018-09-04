@@ -131,6 +131,7 @@ class User(db.Model, UserMixin):
         self.set_role()
 
     def set_password(self, password):
+        """设置密码"""
         self.password_hash = generate_password_hash(password)
 
     def set_role(self):
@@ -142,6 +143,7 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def validate_password(self, password):
+        """验证密码"""
         return check_password_hash(self.password_hash, password)
 
     def follow(self, user):
@@ -202,6 +204,7 @@ class User(db.Model, UserMixin):
         db.session.commit()
 
     def generate_avatar(self):
+        """生成头像"""
         avatar = Identicon()
         filenames = avatar.generate(text=self.username)
         self.avatar_s = filenames[0]
@@ -218,6 +221,7 @@ class User(db.Model, UserMixin):
         return self.active
 
     def can(self, permission_name):
+        """判断user的权限"""
         permission = Permission.query.filter_by(name=permission_name).first()
         return permission is not None and self.role is not None and permission in self.role.permissions
 
