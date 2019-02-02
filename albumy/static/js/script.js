@@ -59,9 +59,25 @@ $(function () {
                 type: 'GET',
                 url: $el.data('href'),
                 success: function (data) {
+                    console.log(data)
                     $el.popover({
                         html: true,
-                        content: data,
+                        // content: data,
+
+                        // test1
+                        // 数值不会随机
+                        // content: Math.random(1000),
+
+                        // test2
+                        // 数值会随机
+                        // content: ()=>{return Math.random(1000)},
+
+                        // test3
+                        // 不成功
+                        content: ()=>{return data},
+
+                        // data-trigger属性用来设置触发方式。
+                        // click | hover | focus | manual
                         trigger: 'manual',
                         animation: false
                     });

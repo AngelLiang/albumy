@@ -1,8 +1,12 @@
+{# 评论区 #}
+
 <div class="comments" id="comments">
+    {# 评论区标题 #}
     <h3>{{ photo.comments|length }} Comments
         <small>
             <a href="{{ url_for('.show_photo', photo_id=photo.id, page=pagination.pages or 1) }}#comment-form">latest</a>
         </small>
+        {# 禁止评论 #}
         {% if current_user == photo.author %}
             <a class="btn btn-xs btn-link float-right" href="{{ url_for('.set_comment', photo_id=photo.id) }}">
                 {% if photo.can_comment %}Disable{% else %}Enable{% endif %} comment
@@ -10,9 +14,11 @@
         {% endif %}
     </h3>
     <hr>
+    {# 渲染该图片的评论 #}
     {% if comments %}
         {% for comment in comments %}
             <div class="comment">
+                {# 评论者简介 #}
                 <div class="comment-thumbnail">
                     <a href="{{ url_for('user.index', username=comment.author.username) }}">
                         <img class="rounded img-fluid avatar-s profile-popover"
@@ -22,14 +28,17 @@
                 </div>
                 <div class="comment-body">
                     <h6>
+                        {# 评论者名字加链接 #}
                         <a class="profile-popover"
                            data-href="{{ url_for('ajax.get_profile', user_id=comment.author.id) }}"
                            href="{{ url_for('user.index', username=comment.author.username) }}">
                             {{ comment.author.name }}
                         </a>
+                        {# Author标签 #}
                         {% if comment.author == photo.author %}
                             <span class="badge badge-light">Author</span>
                         {% endif %}
+                        {# 评论时间戳 #}
                         <small data-toggle="tooltip" data-placement="top" data-timestamp="{{ comment.timestamp }}"
                                data-delay="500">
                             {{ moment(comment.timestamp).fromNow(refresh=True) }}
