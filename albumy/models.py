@@ -15,6 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from albumy.extensions import db, whooshee
 
+# 角色与权限的关系表
 # relationship table
 roles_permissions = db.Table('roles_permissions',
                              db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
@@ -62,8 +63,11 @@ class Role(db.Model):
 
 # relationship object
 class Follow(db.Model):
+    """关注模型"""
+    # 关注对象
     follower_id = db.Column(db.Integer, db.ForeignKey('user.id'),
                             primary_key=True)
+    # 关注者
     followed_id = db.Column(db.Integer, db.ForeignKey('user.id'),
                             primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -74,8 +78,11 @@ class Follow(db.Model):
 
 # relationship object
 class Collect(db.Model):
+    """收藏模型"""
+    # 收藏者
     collector_id = db.Column(db.Integer, db.ForeignKey('user.id'),
                              primary_key=True)
+    # 收藏对象，这里可以考虑用 generic foreign key
     collected_id = db.Column(db.Integer, db.ForeignKey('photo.id'),
                              primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -98,22 +105,28 @@ class User(db.Model, UserMixin):
     location = db.Column(db.String(50))
     # 用户加入时间
     member_since = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # 头像信息
     avatar_s = db.Column(db.String(64))
     avatar_m = db.Column(db.String(64))
     avatar_l = db.Column(db.String(64))
     avatar_raw = db.Column(db.String(64))
 
     confirmed = db.Column(db.Boolean, default=False)
-    locked = db.Column(db.Boolean, default=False)
-    active = db.Column(db.Boolean, default=True)
+    locked = db.Column(db.Boolean, default=False)  # 锁定
+    active = db.Column(db.Boolean, default=True)  # 启用
 
     public_collections = db.Column(db.Boolean, default=True)
+    # 是否接收评论通知
     receive_comment_notification = db.Column(db.Boolean, default=True)
+    # 是否接收关注通知
     receive_follow_notification = db.Column(db.Boolean, default=True)
+    # 是否接收收藏通知
     receive_collect_notification = db.Column(db.Boolean, default=True)
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
 
+    # 关系对象
     role = db.relationship('Role', back_populates='users')
     photos = db.relationship('Photo', back_populates='author', cascade='all')
     comments = db.relationship('Comment', back_populates='author', cascade='all')
@@ -186,20 +199,24 @@ class User(db.Model, UserMixin):
         return Collect.query.with_parent(self).filter_by(collected_id=photo.id).first() is not None
 
     def lock(self):
+        """锁定"""
         self.locked = True
         self.role = Role.query.filter_by(name='Locked').first()
         db.session.commit()
 
     def unlock(self):
+        """解锁"""
         self.locked = False
         self.role = Role.query.filter_by(name='User').first()
         db.session.commit()
 
     def block(self):
+        """禁用"""
         self.active = False
         db.session.commit()
 
     def unblock(self):
+        """解禁"""
         self.active = True
         db.session.commit()
 
@@ -222,10 +239,53 @@ class User(db.Model, UserMixin):
 
     def can(self, permission_name):
         """判断user的权限"""
-        permission = Permission.query.filter_by(name=permission_name).first()
-        return permission is not None and self.role is not None and permission in self.role.permissions
 
+        # permission = Permission.query.filter_by(name=permission_name).first()
+        # return permission is not None and self.role is not None and permission in self.role.permissions
+        """
+        $ flask shell
+        >>> admin = User.query.get(1)
+        ...
+        >>> admin.can('ADMINISTER')
 
+        2019-09-29 09:40:10,451 INFO sqlalchemy.engine.base.Engine ('ADMINISTER', 1, 0)
+        2019-09-29 09:40:10,456 INFO sqlalchemy.engine.base.Engine SELECT role.id AS role_id, role.name AS role_name
+        FROM role
+        WHERE role.id = ?
+        2019-09-29 09:40:10,595 INFO sqlalchemy.engine.base.Engine (4,)
+
+        2019-09-29 09:40:10,634 INFO sqlalchemy.engine.base.Engine SELECT permission.id AS permission_id, permission.name AS permission_name
+        FROM permission, roles_permissions
+        WHERE ? = roles_permissions.role_id AND permission.id = roles_permissions.permission_id
+        2019-09-29 09:40:10,777 INFO sqlalchemy.engine.base.Engine (4,)
+
+        True
+        """
+
+        # 查询优化
+        permission = Permission.query.filter(
+            Permission.name == permission_name,
+            roles_permissions.c.permission_id == Permission.id,
+            Role.id == roles_permissions.c.role_id,
+            User.role_id == Role.id,
+        ).first()
+        """
+        $ flask shell
+        >>> admin = User.query.get(1)
+        ...
+        >>> admin.can('ADMINISTER')
+
+        2019-09-29 09:42:27,235 INFO sqlalchemy.engine.base.Engine SELECT permission.id AS permission_id, permission.name AS permission_name
+        FROM permission, roles_permissions, role, user
+        WHERE permission.name = ? AND roles_permissions.permission_id = permission.id AND roles_permissions.role_id = role.id AND user.role_id = role.id
+        LIMIT ? OFFSET ?
+        2019-09-29 09:42:27,424 INFO sqlalchemy.engine.base.Engine ('ADMINISTER', 1, 0)
+
+        True
+        """
+        return permission is not None
+
+# photo 和 tag 关系表
 tagging = db.Table('tagging',
                    db.Column('photo_id', db.Integer, db.ForeignKey('photo.id')),
                    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'))
@@ -284,7 +344,7 @@ class Notification(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     # 时间戳
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    
+
     # 接收者
     # Notification模型与User模型是一对多关系
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
