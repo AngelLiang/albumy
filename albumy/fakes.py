@@ -20,6 +20,7 @@ fake = Faker()
 
 
 def fake_admin():
+    """虚拟管理员"""
     admin = User(name='Grey Li',
                  username='greyli',
                  email='admin@helloflask.com',

@@ -19,12 +19,14 @@ else:
 
 
 class Operations:
+    """操作集合"""
     CONFIRM = 'confirm'
     RESET_PASSWORD = 'reset-password'
     CHANGE_EMAIL = 'change-email'
 
 
 class BaseConfig:
+    # 管理员邮箱
     ALBUMY_ADMIN_EMAIL = os.getenv('ALBUMY_ADMIN', 'admin@helloflask.com')
     ALBUMY_PHOTO_PER_PAGE = 12
     ALBUMY_COMMENT_PER_PAGE = 15
@@ -36,7 +38,7 @@ class BaseConfig:
     ALBUMY_MANAGE_COMMENT_PER_PAGE = 30
     ALBUMY_SEARCH_RESULT_PER_PAGE = 20
     ALBUMY_MAIL_SUBJECT_PREFIX = '[Albumy]'
-    ALBUMY_UPLOAD_PATH = os.path.join(basedir, 'uploads')
+    ALBUMY_UPLOAD_PATH = os.path.join(basedir, 'uploads')  # 上传文件夹
     ALBUMY_PHOTO_SIZE = {'small': 400,
                          'medium': 800}
     ALBUMY_PHOTO_SUFFIX = {
@@ -51,6 +53,7 @@ class BaseConfig:
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # 头像文件夹
     AVATARS_SAVE_PATH = os.path.join(ALBUMY_UPLOAD_PATH, 'avatars')
     AVATARS_SIZE_TUPLE = (30, 100, 200)
 

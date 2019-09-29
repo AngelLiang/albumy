@@ -37,6 +37,7 @@ class Role(db.Model):
 
     @staticmethod
     def init_role():
+        """角色数据初始化"""
         roles_permissions_map = {
             # 'Guest': [],
             # 'Blocked': [],
@@ -148,6 +149,7 @@ class User(db.Model, UserMixin):
         self.password_hash = generate_password_hash(password)
 
     def set_role(self):
+        """设置角色"""
         if self.role is None:
             if self.email == current_app.config['ALBUMY_ADMIN_EMAIL']:
                 self.role = Role.query.filter_by(name='Administrator').first()
