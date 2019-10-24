@@ -33,6 +33,7 @@ def generate_token(user, operation, expire_in=None, **kwargs):
 
 
 def validate_token(user, token, operation, new_password=None):
+    """验证token"""
     s = Serializer(current_app.config['SECRET_KEY'])
 
     try:
@@ -62,6 +63,7 @@ def validate_token(user, token, operation, new_password=None):
 
 
 def rename_image(old_filename):
+    """图片重命名"""
     ext = os.path.splitext(old_filename)[1]
     new_filename = uuid.uuid4().hex + ext
     return new_filename

@@ -119,6 +119,7 @@ def get_avatar(filename):
 @confirm_required
 @permission_required('UPLOAD')
 def upload():
+    """上传"""
     if request.method == 'POST' and 'file' in request.files:
         f = request.files.get('file')
         filename = rename_image(f.filename)
